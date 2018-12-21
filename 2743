@@ -1,0 +1,72 @@
+#include<iostream>
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+inline long long _read() {
+	long long ans; char c;
+	for (c = getchar(); c<'0' || c>'9'; c = getchar());
+	for (ans = 0; c <= '9'&&c >= '0'; c = getchar()) ans = ans * 10 + c - '0';
+	return ans;
+}
+long long write_node[20], write_i;
+inline void _write(long long ans) {
+	if (!ans) putchar('0');
+	for (write_i = 1; ans; write_i++, ans /= 10) write_node[write_i] = ans % 10;
+	for (write_i--; write_i; write_i--) putchar(write_node[write_i] + '0');
+	putchar('\n'); return;
+}
+struct TT {
+#define lowbit(x) x&(-x)
+	int a[2000001], n;
+	inline void inin(int x) {
+		n = x;
+		memset(a, 0, sizeof a);
+		return;
+	}
+	inline int ask(int pos) {
+		register int ans = 0;
+		for (register int i = pos; i; i -= lowbit(i)) ans += a[i];
+		return ans;
+	}
+	inline void change(int pos, int tag) {
+		if (pos == 0) return;
+		for (register int i = pos; i <= n; i += lowbit(i)) a[i] += tag;
+		return;
+	}
+	//树状数组 
+}f1, f2; //f1查询数组1 f2查询数组2 
+struct TTT {
+	int l, r, pos;
+}t[2000001];
+int n, q;
+int pre[2000001], last[2000001], a[2000001], ans[2000001];
+inline bool cmd(TTT t1, TTT t2) {
+	return t1.r < t2.r;
+}
+inline void inin() {
+	n = _read(); q = _read(); q = _read();
+	for (register int i = 1; i <= n; ++i) a[i] = _read();
+	memset(last, 0, sizeof last);
+	for (register int i = 1; i <= n; ++i) pre[i] = last[a[i]], last[a[i]] = i;
+	for (register int i = 0; i < q; ++i) t[i].l = _read(), t[i].r = _read(), t[i].pos = i;
+	sort(t, t + q, cmd);                  //离线 
+	return;
+}
+int main() {
+	inin();
+	f1.inin(n); f2.inin(n);
+	for (register int i = 0, r = 1; i < q; ++i) {
+		while (r <= t[i].r&&r <= n) {
+			f1.change(pre[r], -1);
+			f1.change(r, 1);
+			f2.change(pre[pre[r]], 1);
+			f2.change(pre[r], -2);
+			f2.change(r, 1);
+			++r;
+		}                                        //在r向右移动时更新查询数组 
+		ans[t[i].pos] = f1.ask(t[i].r) - f1.ask(t[i].l - 1) - f2.ask(t[i].r) + f2.ask(t[i].l - 1);
+	}
+	for (register int i = 0; i < q; ++i) _write(ans[i]);
+	return 0;
+}
